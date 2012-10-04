@@ -1,11 +1,11 @@
 Name:                htms
 Version:             0.1
 Description:         Torque master server
-License:             Beerware
+License:             MIT
 Author:              Dan Keller
 Maintainer:          dbk40@case.edu
 Build-Type:          Simple
 Cabal-Version:       >=1.2
 Executable htms
-  Main-is:           Haq.hs
+  Main-is:           Htms.hs
   Build-Depends:     base >= 3
