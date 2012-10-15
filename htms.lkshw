@@ -1,0 +1,10 @@
+Version of workspace file format:
+               1
+Time of storage:
+               "Sat Oct 13 22:17:11 UTC 2012"
+Name of the workspace:
+               "htms"
+File paths of contained packages:
+               ["htms.cabal"]
+Maybe file path of an active package:
+               Just "htms.cabal"
