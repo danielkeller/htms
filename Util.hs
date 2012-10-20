@@ -38,16 +38,9 @@ toMessage msg = Message (takeHeader msg) (takeMessage msg)
 
 --control types
 
-type StateMod s = (s -> IO s) -> IO ()
-
+type StateMod s = (s -> IO s) -> IO () -- use as 'modState $ \s -> do'
 --parameters are origin address, message, and a function to safely modify global state
 type MsgHandler s = SockAddr -> Message -> StateMod s -> IO ()
-
---lazily read everything from a socket
-recvAllFrom sock = repeat $ recvFrom sock 1024
-
---convenience function
-mapBind from to = map (>>= to) from
 
 mainLoop :: s -> Map.Map Int8 (MsgHandler s) -> IO ()
 mainLoop initState actions = withSocketsDo $ do
@@ -61,11 +54,8 @@ mainLoop initState actions = withSocketsDo $ do
     initMVar <- newMVar initState
     let modState = modifyMVar_ initMVar -- :: StateMod
 
-    let process (bytes, sender) = do
+    forever $ recvFrom sock 1024 >>= \ (bytes, sender) -> do
         let msg = toMessage bytes
         case Map.lookup (msgType $ header msg) actions of
             Just handler -> void $ forkIO $ handler sender msg modState
             Nothing      -> putStrLn $ "got unknown message #" ++ show (msgType $ header msg)
-
-    --start recieving data
-    sequence_ $ recvAllFrom sock `mapBind` process

@@ -8,4 +8,4 @@ Build-Type:          Simple
 Cabal-Version:       >=1.2
 Executable htms
   Main-is:           Htms.hs
-  Build-Depends:     base >= 3, network, bytestring, containers, binary, datetime, transformers
+  Build-Depends:     base >= 3, network >= 2.4, bytestring, containers, binary, datetime, transformers

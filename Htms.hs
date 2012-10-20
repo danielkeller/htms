@@ -20,25 +20,15 @@ t_inforesp = 12
 t_heartbeat = 22
 
 data Game = Game { lastSeen :: DateTime }
-
+    deriving (Eq, Ord, Show)
 type Games = Map.Map SockAddr Game
 
-actHeartbeat :: MsgHandler Integer
+actHeartbeat :: MsgHandler Games
 actHeartbeat sender msg modState = do
-    modState $ \s -> do
-        print s
-        threadDelay 1000000
-        print (s + 1)
-        print ""
-        return (s + 1)
-    threadDelay 1000000
-    modState $ \s -> do
-        print s
-        threadDelay 1000000
-        print (s - 1)
-        print ""
-        return (s - 1)
+    modState $ \ games -> do
+        time <- getCurrentTime
+        return $ Map.insert sender (Game time) games
 
-main = mainLoop 0 $ Map.fromList
+main = mainLoop Map.empty $ Map.fromList
     [(32, actHeartbeat)]
 
