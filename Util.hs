@@ -18,7 +18,7 @@ import Control.Monad
 import qualified Data.Map as Map
 import Data.Int
 import qualified Data.Binary as Bin
-import Control.Monad.Trans.State.Strict
+import Control.Applicative
 
 torquePort = 28002
 
@@ -38,11 +38,18 @@ data Message = Message { header :: Header, body :: B.ByteString }
 
 toMessage msg = Message (takeHeader msg) (takeMessage msg)
 
---parameters are origin address, message, and a message box for a state modifier function
-type MsgHandler s = SockAddr -> Message -> MVar (s -> IO s) -> IO ()
+--control types
 
---recvAllFrom = sequence . repeat $ recvFrom sock 1024
---or performAll = sequence . repeat
+type StateMod s = (s -> IO s) -> IO ()
+
+--parameters are origin address, message, and a function to safely modify global state
+type MsgHandler s = SockAddr -> Message -> StateMod s -> IO ()
+
+--lazily read everything from a socket
+recvAllFrom sock = repeat $ recvFrom sock 1024
+
+--convenience function
+mapBind from to = map (>>= to) from
 
 mainLoop :: s -> Map.Map Int8 (MsgHandler s) -> IO ()
 mainLoop initState actions = withSocketsDo $ do
@@ -52,28 +59,15 @@ mainLoop initState actions = withSocketsDo $ do
     setSocketOption sock ReuseAddr 1
     bindSocket sock (SockAddrInet torquePort iNADDR_ANY)
 
-    --start tracking state
-    stateChanger <- newEmptyMVar
-    forkIO $ trackState stateChanger initState
+    --setup state tracking
+    initMVar <- newMVar initState
+    let modState = modifyMVar_ initMVar -- :: StateMod
+
+    let process (bytes, sender) = do
+        let msg = toMessage bytes
+        case Map.lookup (msgType $ header msg) actions of
+            Just handler -> void $ forkIO $ handler sender msg modState
+            Nothing      -> putStrLn $ "got unknown message #" ++ show (msgType $ header msg)
 
     --start recieving data
-    process stateChanger sock
-
-    where
-        trackState mvar state = do
-            changer <- takeMVar mvar
-            changer state >>= trackState mvar
-
-        process mvar sock = do
-            (bytes, sender) <- recvFrom sock 1024
-            let msg = toMessage bytes
-            case Map.lookup (msgType $ header msg) actions of
-
-                Just handler -> do
-                        handler sender msg mvar
-                        process mvar sock
-                        return () --not reached
-
-                Nothing      -> do
-                        putStrLn $ "got unknown message #" ++ show (msgType $ header msg)
-                        process mvar sock
+    sequence_ $ recvAllFrom sock `mapBind` process

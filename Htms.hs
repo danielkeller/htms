@@ -1,10 +1,14 @@
+module Main (
+    main
+) where
+
 import qualified Data.Map as Map
 import Data.DateTime
 import Network.Socket
 import Util
 import Control.Concurrent
 import Control.Applicative
-import Control.Monad.Trans.State.Strict
+import Control.Monad
 
 torquePort = 28002
 
@@ -20,17 +24,20 @@ data Game = Game { lastSeen :: DateTime }
 type Games = Map.Map SockAddr Game
 
 actHeartbeat :: MsgHandler Integer
-actHeartbeat sender msg mvar = do
-    --return $ putStrLn $ show num
-    --newGame <- Game getCurrentTime
-    --Map.insert sender newGame games
-    print $ body msg
-    putMVar mvar printinc
-    return ()
-    where
-        printinc n = do
-            print n
-            return (n + 1)
+actHeartbeat sender msg modState = do
+    modState $ \s -> do
+        print s
+        threadDelay 1000000
+        print (s + 1)
+        print ""
+        return (s + 1)
+    threadDelay 1000000
+    modState $ \s -> do
+        print s
+        threadDelay 1000000
+        print (s - 1)
+        print ""
+        return (s - 1)
 
 main = mainLoop 0 $ Map.fromList
     [(32, actHeartbeat)]
