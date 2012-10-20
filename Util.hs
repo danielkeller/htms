@@ -7,7 +7,6 @@ module Util (
     mainLoop
 ) where
 
-import System.Environment
 import Network hiding (accept, sendTo, recvFrom)
 import Network.Socket hiding (send, sendTo, recv, recvFrom)
 import Network.Socket.ByteString
@@ -18,7 +17,6 @@ import Control.Monad
 import qualified Data.Map as Map
 import Data.Int
 import qualified Data.Binary as Bin
-import Control.Applicative
 
 torquePort = 28002
 

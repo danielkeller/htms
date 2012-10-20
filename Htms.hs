@@ -5,10 +5,10 @@ module Main (
 import qualified Data.Map as Map
 import Data.DateTime
 import Network.Socket
-import Util
 import Control.Concurrent
-import Control.Applicative
 import Control.Monad
+
+import Util
 
 torquePort = 28002
 
