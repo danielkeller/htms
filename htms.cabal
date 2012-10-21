@@ -1,11 +1,18 @@
-Name:                htms
-Version:             0.1
-Description:         Torque master server
-License:             MIT
-Author:              Dan Keller
-Maintainer:          dbk40@case.edu
-Build-Type:          Simple
-Cabal-Version:       >=1.2
-Executable htms
-  Main-is:           Htms.hs
-  Build-Depends:     base >= 3, network >= 2.4, bytestring, containers, binary, datetime, transformers
+name: htms
+version: 0.1
+cabal-version: >=1.2
+build-type: Simple
+license: MIT
+license-file: ""
+maintainer: dbk40@case.edu
+description: Torque master server
+author: Dan Keller
+data-dir: ""
+ 
+executable htms
+    build-depends: base >=3, network >=2.4, bytestring -any,
+                   containers -any, binary -any, datetime -any, transformers -any
+    main-is: Htms.hs
+    buildable: True
+    other-modules: Util
+ 
