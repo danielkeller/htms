@@ -52,9 +52,8 @@ actHeartbeat sender msg modState = do
                 return $ Map.delete sender games --timed out (not updated since we did)
             else return games --still good
 
-reqInfo server = do
-    sendTo
+reqInfo server = udpSend server $ Header t_inforeq 0 0
 
 main = mainLoop Map.empty $ Map.fromList
-    [(32, actHeartbeat)]
+    [(t_heartbeat, actHeartbeat)]
 

@@ -1,8 +1,6 @@
 module Util (
-    Header(),
-    msgType, flags, seqNum,
-    Message(),
-    header, body,
+    Header(..),
+    Message(..),
     MsgHandler(),
     mainLoop,
     udpSend
@@ -36,9 +34,7 @@ instance Bin.Binary Header where
         put msgType >> put flags >> put seqNum
     get = liftM3 Header get get get
 
-tolazy bs = B.Lazy.fromChunks [bs]
-
-takeHeader msg = Bin.decode $ tolazy $ msg :: Header
+takeHeader msg = Bin.decode $ B.Lazy.fromStrict $ msg :: Header
 takeMessage msg = B.drop 6 msg
 
 data Message = Message { header :: Header, body :: B.ByteString }
@@ -46,8 +42,6 @@ data Message = Message { header :: Header, body :: B.ByteString }
 toMessage msg
      | B.length msg >= 6 = Just $ Message (takeHeader msg) (takeMessage msg)
      | otherwise         = Nothing
-
---control types
 
 --helper for MaybeT
 liftMaybe = MaybeT . pure
@@ -76,4 +70,4 @@ mainLoop initState actions = withSocketsDo $ do
 
 udpSend addr msg = do
     sock <- socket AF_INET Datagram defaultProtocol
-    sendTo sock msg addr
+    sendTo sock (B.Lazy.toStrict $ Bin.encode msg) addr

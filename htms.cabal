@@ -10,7 +10,7 @@ author: Dan Keller
 data-dir: ""
  
 executable htms
-    build-depends: base >=3, network >=2.4, bytestring -any,
+    build-depends: base >=3, network >=2.4, bytestring >= 0.10,
                    containers -any, binary -any, datetime -any, transformers -any
     main-is: Htms.hs
     buildable: True
